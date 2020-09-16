@@ -1,0 +1,422 @@
+# Analytics Edge
+
+```{r}
+setwd("~/R_Projects/Analytics_Edge/Unit1_Introduction to Analytics")
+```
+
+```{r}
+WHO <- read.csv("WHO.csv")
+```
+
+What is the mean value of the "Over60" variable?
+```{r}
+mean(WHO$Over60)
+```
+Which country has the smallest percentage of the population over 60?
+```{r}
+WHO[which.min(WHO$Over60),]
+```
+Which country has the largest literacy rate?
+```{r}
+WHO[which.max(WHO$LiteracyRate),]
+```
+
+Which region has the lowest average child mortality rate across all countries in that region?
+```{r}
+tapply(WHO$ChildMortality, WHO$Region, mean, na.rm = TRUE)
+```
+
+How many rows of data (observations) are in this dataset?
+```{r}
+mvt <- read.csv("mvtWeek1.csv")
+```
+
+```{r}
+nrow(mvt)
+```
+How many variables are in this dataset?
+```{r}
+ncol(mvt)
+```
+Using the "max" function, what is the maximum value of the variable "ID"?
+```{r}
+max(mvt$ID)
+```
+
+What is the minimum value of the variable "Beat"?
+```{r}
+min(mvt$Beat)
+```
+How many observations have value TRUE in the Arrest variable (this is the number of crimes for which an arrest was made)?
+```{r}
+sum(mvt$Arrest)
+```
+
+How many observations have a LocationDescription value of ALLEY?
+```{r}
+sum(mvt$LocationDescription == "ALLEY")
+```
+
+In what format are the entries in the variable Date?
+```{r}
+mvt$Date[1]
+```
+DateConvert = as.Date(strptime(mvt$Date, "%m/%d/%y %H:%M"))
+
+This converts the variable "Date" into a Date object in R. Take a look at the variable DateConvert using the summary function.
+
+What is the month and year of the median date in our dataset? Enter your answer as "Month Year", without the quotes. (Ex: if the answer was 2008-03-28, you would give the answer "March 2008", without the quotes.)
+```{r}
+DateConvert = as.Date(strptime(mvt$Date, "%m/%d/%y %H:%M"))
+```
+
+```{r}
+median(DateConvert)
+```
+Now, let's extract the month and the day of the week, and add these variables to our data frame mvt. We can do this with two simple functions. Type the following commands in R:
+```{r}
+mvt$Month = months(DateConvert)
+
+mvt$Weekday = weekdays(DateConvert)
+```
+
+
+
+This creates two new variables in our data frame, Month and Weekday, and sets them equal to the month and weekday values that we can extract from the Date object. Lastly, replace the old Date variable with DateConvert by typing:
+
+```{r}
+
+mvt$Date = DateConvert
+```
+
+
+
+Using the table command, answer the following questions.
+
+In which month did the fewest motor vehicle thefts occur?
+
+```{r}
+table(mvt$Month)
+```
+
+On which weekday did the most motor vehicle thefts occur?
+```{r}
+table(mvt$Weekday)
+```
+
+Each observation in the dataset represents a motor vehicle theft, and the Arrest variable indicates whether an arrest was later made for this theft. Which month has the largest number of motor vehicle thefts for which an arrest was made?
+```{r}
+table(mvt$Month, mvt$Arrest)
+```
+
+Looking at the histogram, answer the following questions.
+
+In general, does it look like crime increases or decreases from 2002 - 2012?
+```{r}
+hist(mvt$Date, breaks=100)
+```
+Does it look like there were more crimes for which arrests were made in the first half of the time period or the second half of the time period?
+```{r}
+boxplot(mvt$Date ~ mvt$Arrest)
+```
+For what proportion of motor vehicle thefts in 2001 was an arrest made?
+```{r}
+table(mvt$Year, mvt$Arrest)
+```
+```{r}
+(2152)/(18517+2152)
+```
+For what proportion of motor vehicle thefts in 2007 was an arrest made?
+```{r}
+(1212)/(1212+13068)
+```
+For what proportion of motor vehicle thefts in 2012 was an arrest made?
+```{r}
+(550)/(13542+550)
+```
+
+We want to find the top five locations where motor vehicle thefts occur. If you create a table of the LocationDescription variable, it is unfortunately very hard to read since there are 78 different locations in the data set. By using the sort function, we can view this same table, but sorted by the number of observations in each category. In your R console, type:
+
+Which locations are the top five locations for motor vehicle thefts, excluding the "Other" category? You should select 5 of the following options.
+```{r}
+sort(table(mvt$LocationDescription))
+```
+Create a subset of your data, only taking observations for which the theft happened in one of these five locations, and call this new data set "Top5". To do this, you can use the | symbol. In lecture, we used the & symbol to use two criteria to make a subset of the data. To only take observations that have a certain value in one variable or the other, the | character can be used in place of the & symbol. This is also called a logical "or" operation.
+
+Alternately, you could create five different subsets, and then merge them together into one data frame using rbind.
+
+How many observations are in Top5?
+```{r}
+Top5 <- mvt[mvt$LocationDescription %in% c("STREET", "PARKING LOT/GARAGE(NON.RESID.)", "ALLEY", "GAS STATION", "DRIVEWAY - RESIDENTIAL"),]
+```
+
+```{r}
+nrow(Top5)
+```
+
+R will remember the other categories of the LocationDescription variable from the original dataset, so running table(Top5$LocationDescription) will have a lot of unnecessary output. To make our tables a bit nicer to read, we can refresh this factor variable. In your R console, type:
+
+```{r}
+Top5$LocationDescription = factor(Top5$LocationDescription)
+```
+
+
+If you run the str or table function on Top5 now, you should see that LocationDescription now only has 5 values, as we expect.
+
+Use the Top5 data frame to answer the remaining questions.
+
+One of the locations has a much higher arrest rate than the other locations. Which is it? Please enter the text in exactly the same way as how it looks in the answer options for Problem 4.1.
+```{r}
+table(Top5$LocationDescription, Top5$Arrest)
+```
+
+On which day of the week do the most motor vehicle thefts at gas stations happen?
+```{r}
+table(Top5$Weekday,Top5$LocationDescription == "GAS STATION")
+```
+On which day of the week do the fewest motor vehicle thefts in residential driveways happen?
+```{r}
+table(Top5$Weekday, Top5$LocationDescription == "DRIVEWAY - RESIDENTIAL")
+```
+Part#2
+```{r}
+IBM <- read.csv("IBMStock.csv")
+GE <- read.csv("GEStock.csv")
+ProcterGamble <- read.csv("ProcterGambleStock.csv")
+CocaCola <- read.csv("CocaColaStock.csv")
+Boeing <- read.csv("BoeingStock.csv")
+```
+
+```{r}
+IBM$Date = as.Date(IBM$Date, "%m/%d/%y")
+
+GE$Date = as.Date(GE$Date, "%m/%d/%y")
+
+CocaCola$Date = as.Date(CocaCola$Date, "%m/%d/%y")
+
+ProcterGamble$Date = as.Date(ProcterGamble$Date, "%m/%d/%y")
+
+Boeing$Date = as.Date(Boeing$Date, "%m/%d/%y")
+```
+
+Our five datasets all have the same number of observations. How many observations are there in each data set?
+```{r}
+nrow(IBM)
+```
+What is the earliest year in our datasets?
+```{r}
+summary(IBM$Date)
+```
+What is the latest year in our datasets?
+```{r}
+max(IBM$Date)
+```
+What is the mean stock price of IBM over this time period?
+```{r}
+mean(IBM$StockPrice)
+```
+What is the minimum stock price of General Electric (GE) over this time period?
+```{r}
+min(GE$StockPrice)
+```
+What is the maximum stock price of Coca-Cola over this time period?
+```{r}
+max(CocaCola$StockPrice)
+```
+What is the median stock price of Boeing over this time period?
+```{r}
+median(Boeing$StockPrice)
+```
+What is the standard deviation of the stock price of Procter & Gamble over this time period?
+```{r}
+sd(ProcterGamble$StockPrice)
+```
+
+Let's plot the stock prices to see if we can visualize trends in stock prices during this time period. Using the plot function, plot the Date on the x-axis and the StockPrice on the y-axis, for Coca-Cola.
+
+This plots our observations as points, but we would really like to see a line instead, since this is a continuous time period. To do this, add the argument type="l" to your plot command, and re-generate the plot (the character is quotes is the letter l, for line). You should now see a line plot of the Coca-Cola stock price.
+
+Around what year did Coca-Cola has its highest stock price in this time period?
+```{r}
+plot(CocaCola$Date, CocaCola$StockPrice, type = 'l')
+```
+Now, let's add the line for Procter & Gamble too. You can add a line to a plot in R by using the lines function instead of the plot function. Keeping the plot for Coca-Cola open, type in your R console:
+
+lines(ProcterGamble$Date, ProcterGamble$StockPrice)
+
+Unfortunately, it's hard to tell which line is which. Let's fix this by giving each line a color. First, re-run the plot command for Coca-Cola, but add the argument col="red". You should see the plot for Coca-Cola show up again, but this time in red. Now, let's add the Procter & Gamble line (using the lines function like we did before), adding the argument col="blue". You should now see in your plot the Coca-Cola stock price in red, and the Procter & Gamble stock price in blue.
+
+As an alternative choice to changing the colors, you could instead change the line type of the Procter & Gamble line by adding the argument lty=2. This will make the Procter & Gamble line dashed.
+
+Using this plot, answer the following questions.
+
+In March of 2000, the technology bubble burst, and a stock market crash occurred. According to this plot, which company's stock dropped more?
+```{r}
+plot(CocaCola$Date, CocaCola$StockPrice, type = 'l')
+lines(ProcterGamble$Date, ProcterGamble$StockPrice, col = 'red', lty = 2)
+abline(v=as.Date(c("2000-03-01")), lwd=.5)
+```
+
+Let's take a look at how the stock prices changed from 1995-2005 for all five companies. In your R console, start by typing the following plot command:
+
+plot(CocaCola$Date[301:432], CocaCola$StockPrice[301:432], type="l", col="red", ylim=c(0,210))
+
+This will plot the CocaCola stock prices from 1995 through 2005, which are the observations numbered from 301 to 432. The additional argument, ylim=c(0,210), makes the y-axis range from 0 to 210. This will allow us to see all of the stock values when we add in the other companies.
+
+Now, use the lines function to add in the other four companies, remembering to only plot the observations from 1995 to 2005, or [301:432]. You don't need the "type" or "ylim" arguments for the lines function, but remember to make each company a different color so that you can tell them apart. Some color options are "red", "blue", "green", "purple", "orange", and "black". To see all of the color options in R, type colors() in your R console.
+
+(If you prefer to change the type of the line instead of the color, here are some options for changing the line type: lty=2 will make the line dashed, lty=3 will make the line dotted, lty=4 will make the line alternate between dashes and dots, and lty=5 will make the line long-dashed.)
+
+Use this plot to answer the following four questions.
+
+Which stock fell the most right after the technology bubble burst in March 2000?
+
+```{r}
+plot(CocaCola$Date[301:432], CocaCola$StockPrice[301:432], type="l", col="black", ylim=c(0,210))
+lines(ProcterGamble$Date[301:432], ProcterGamble$StockPrice[301:432], col = 'red', lty = 2)
+lines(IBM$Date[301:432], IBM$StockPrice[301:432], col = 'green', lty = 2)
+lines(Boeing$Date[301:432], Boeing$StockPrice[301:432], col = 'orange', lty = 3)
+lines(GE$Date[301:432], GE$StockPrice[301:432], col = 'blue', lty = 4)
+
+```
+
+Lastly, let's see if stocks tend to be higher or lower during certain months. Use the tapply command to calculate the mean stock price of IBM, sorted by months. To sort by months, use
+
+months(IBM$Date)
+
+as the second argument of the tapply function.
+
+For IBM, compare the monthly averages to the overall average stock price. In which months has IBM historically had a higher stock price (on average)? Select all that apply.
+```{r}
+tapply(IBM$StockPrice, months(IBM$Date), mean) > mean(IBM$StockPrice)
+```
+
+Repeat the tapply function from the previous problem for each of the other four companies, and use the output to answer the remaining questions.
+
+General Electric and Coca-Cola both have their highest average stock price in the same month. Which month is this?
+```{r}
+tapply(GE$StockPrice, months(GE$Date), mean)
+tapply(CocaCola$StockPrice, months(CocaCola$Date), mean)
+```
+
+Part 3: Demographics and Employment
+
+```{r}
+CPS <- read.csv("CPSData.csv")
+```
+
+How many interviewees are in the dataset?
+```{r}
+nrow(CPS)
+```
+Among the interviewees with a value reported for the Industry variable, what is the most common industry of employment?
+```{r}
+table(CPS$Industry)
+```
+Which state has the fewest interviewees?
+```{r}
+sort(table(CPS$State))
+```
+
+What proportion of interviewees are citizens of the United States?
+```{r}
+table(CPS$Citizenship)
+```
+```{r}
+(116639+7073)/131302
+```
+The CPS differentiates between race (with possible values American Indian, Asian, Black, Pacific Islander, White, or Multiracial) and ethnicity. A number of interviewees are of Hispanic ethnicity, as captured by the Hispanic variable. For which races are there at least 250 interviewees in the CPS dataset of Hispanic ethnicity?
+```{r}
+table(CPS$Race, CPS$Hispanic)
+```
+
+Which variables have at least one interviewee with a missing (NA) value? (Select all that apply.)
+```{r}
+colSums(is.na(CPS))
+```
+
+Often when evaluating a new dataset, we try to identify if there is a pattern in the missing values in the dataset. We will try to determine if there is a pattern in the missing values of the Married variable. The function is.na(CPS$Married) returns a vector of TRUE/FALSE values for whether the Married variable is missing. We can see the breakdown of whether Married is missing based on the reported value of the Region variable with the function table(CPS$Region, is.na(CPS$Married)). Which is the most accurate:
+
+```{r}
+table(CPS$Age, is.na(CPS$Married))
+```
+
+How many states had all interviewees living in a non-metropolitan area (aka they have a missing MetroAreaCode value)?
+```{r}
+table(CPS$State, is.na(CPS$MetroAreaCode))
+```
+
+Which region of the United States has the largest proportion of interviewees living in a non-metropolitan area?
+```{r}
+table(CPS$Region, is.na(CPS$MetroAreaCode))
+```
+Which state has a proportion of interviewees living in a non-metropolitan area closest to 30%?
+```{r}
+sort(tapply(is.na(CPS$MetroAreaCode), CPS$State, mean))
+```
+How many observations (codes for metropolitan areas) are there in MetroAreaMap?
+How many observations (codes for countries) are there in CountryMap?
+```{r}
+MetroAreaMap <- read.csv("MetroAreaCodes.csv")
+CountryCodes <- read.csv("CountryCodes.csv")
+```
+
+```{r}
+nrow(MetroAreaMap)
+nrow(CountryCodes)
+```
+
+```{r}
+CPS = merge(CPS, MetroAreaMap, by.x="MetroAreaCode", by.y="Code", all.x=TRUE)
+```
+Review the new version of the CPS data frame with the summary() and str() functions. What is the name of the variable that was added to the data frame by the merge() operation?
+```{r}
+summary(CPS)
+```
+Which of the following metropolitan areas has the largest number of interviewees?
+```{r}
+sort(table(CPS$MetroArea))
+```
+Which metropolitan area has the highest proportion of interviewees of Hispanic ethnicity?
+```{r}
+sort(tapply(CPS$Hispanic, CPS$MetroArea, mean))
+```
+
+Remembering that CPS$Race == "Asian" returns a TRUE/FALSE vector of whether an interviewee is Asian, determine the number of metropolitan areas in the United States from which at least 20% of interviewees are Asian.
+```{r}
+t <- tapply(CPS$Race == "Asian", CPS$MetroArea, mean)
+t[t>=.2]
+```
+determine which metropolitan area has the smallest proportion of interviewees who have received no high school diploma.
+```{r}
+sort(tapply(CPS$Education == "No high school diploma", CPS$MetroArea, function (x) mean(x,na.rm = TRUE)))
+```
+
+What is the name of the variable added to the CPS data frame by this merge operation?
+```{r}
+CPS = merge(CPS, CountryCodes, by.x="CountryOfBirthCode", by.y="Code", all.x=TRUE)
+```
+How many interviewees have a missing value for the new country of birth variable?
+```{r}
+sum(is.na(CPS$Country))
+```
+
+Among all interviewees born outside of North America, which country was the most common place of birth?
+```{r}
+sort(table(CPS$Country))
+```
+What proportion of the interviewees from the "New York-Northern New Jersey-Long Island, NY-NJ-PA" metropolitan area have a country of birth that is not the United States?
+```{r}
+table(CPS$MetroArea == "New York-Northern New Jersey-Long Island, NY-NJ-PA", CPS$Country != "United States")
+```
+Which metropolitan area has the largest number (note -- not proportion) of interviewees with a country of birth in India?
+```{r}
+sort(tapply(CPS$Country == "India", CPS$MetroArea, sum, na.rm = TRUE))
+```
+```{r}
+sort(tapply(CPS$Country == "Brazil", CPS$MetroArea, sum, na.rm = TRUE))
+```
+
+```{r}
+sort(tapply(CPS$Country == "Somalia", CPS$MetroArea, sum, na.rm = TRUE))
+```
