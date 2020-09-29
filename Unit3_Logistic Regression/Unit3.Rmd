@@ -1,0 +1,282 @@
+# Logistic Regression
+
+What is the value of the Odds for this observation?
+```{r}
+Odds <- exp(-1.5+1*3+5*-0.5)
+```
+
+What is the value of P(y = 1) for this observation?
+```{r}
+1/(1+1/Odds)
+```
+
+```{r}
+quality = read.csv("quality.csv")
+#install.packages("caTools")
+library(caTools)
+set.seed(88)
+split = sample.split(quality$PoorCare, SplitRatio = 0.75)
+
+qualityTrain = subset(quality, split == TRUE)
+
+qualityTest = subset(quality, split == FALSE)
+```
+
+```{r}
+QualityLog <- glm(PoorCare ~ StartedOnCombination + ProviderCount, data=qualityTrain, family=binomial)
+```
+
+```{r}
+summary(QualityLoy)
+```
+
+```{r}
+set.seed(88)
+predictTest = predict(QualityLog, type="response", newdata=qualityTest)
+```
+```{r}
+library(ROCR)
+ROCRpredtest <- prediction(predictTest, qualityTest$PoorCare)
+auc <- as.numeric(performance(ROCRpredtest, "auc")@y.values)
+```
+
+How many observations (songs) are from the year 2010?
+```{r}
+songs <- read.csv("songs.csv")
+```
+```{r}
+nrow(subset(songs, year == 2010))
+```
+How many songs does the dataset include for which the artist name is "Michael Jackson"?
+```{r}
+nrow(subset(songs, artistname == "Michael Jackson"))
+```
+Which of these songs by Michael Jackson made it to the Top 10?
+```{r}
+top_10 <- subset(songs, artistname == "Michael Jackson" & Top10 == 1)
+top_10$songtitle
+```
+
+The variable corresponding to the estimated time signature (timesignature) is discrete, meaning that it only takes integer values (0, 1, 2, 3, . . . ). What are the values of this variable that occur in our dataset?
+```{r}
+unique(songs$timesignature, return)
+```
+
+Which timesignature value is the most frequent among songs in our dataset?
+```{r}
+table(songs$timesignature)
+```
+
+Out of all of the songs in our dataset, the song with the highest tempo is one of the following songs. Which one is it?
+```{r}
+songs[which.max(songs$tempo),"songtitle"]
+```
+
+We wish to predict whether or not a song will make it to the Top 10. To do this, first use the subset function to split the data into a training set "SongsTrain" consisting of all the observations up to and including 2009 song releases, and a testing set "SongsTest", consisting of the 2010 song releases.
+
+How many observations (songs) are in the training set?
+```{r}
+SongsTrain <- subset(songs, year <= 2009)
+SongsTest <- subset(songs, year == 2010)
+nrow(SongsTrain)
+```
+
+Looking at the summary of your model, what is the value of the Akaike Information Criterion (AIC)?
+```{r}
+nonvars = c("year", "songtitle", "artistname", "songID", "artistID")
+SongsTrain = SongsTrain[ , !(names(SongsTrain) %in% nonvars) ]
+
+SongsTest = SongsTest[ , !(names(SongsTest) %in% nonvars) ]
+SongsLog1 = glm(Top10 ~ ., data=SongsTrain, family=binomial)
+
+```
+
+```{r}
+summary(SongsLog1)
+```
+
+What is the correlation between the variables "loudness" and "energy" in the training set?
+```{r}
+cor(SongsTrain$loudness, SongsTrain$energy)
+```
+Look at the summary of SongsLog2, and inspect the coefficient of the variable "energy". What do you observe?
+```{r}
+SongsLog2 = glm(Top10 ~ . - loudness, data=SongsTrain, family=binomial)
+summary(SongsLog2)
+```
+
+```{r}
+SongsLog3 <- glm(Top10 ~. -energy, data = SongsTrain, family = binomial)
+summary(SongsLog3)
+```
+Make predictions on the test set using Model 3. What is the accuracy of Model 3 on the test set, using a threshold of 0.45? 
+```{r}
+songs_preds <- predict(SongsLog3, type = "response")
+```
+
+```{r}
+songs_test_preds <- predict(SongsLog3, newdata = SongsTest, type = "response")
+table(SongsTest$Top10, songs_test_preds >= .45)
+```
+```{r}
+(19+309)/373
+```
+
+Let's check if there's any incremental benefit in using Model 3 instead of a baseline model. Given the difficulty of guessing which song is going to be a hit, an easier model would be to pick the most frequent outcome (a song is not a Top 10 hit) for all songs. What would the accuracy of the baseline model be on the test set? (Give your answer as a number between 0 and 1.)
+```{r}
+table(SongsTest$Top10)
+314/(314+59)
+```
+
+How many songs does Model 3 correctly predict as Top 10 hits in 2010 (remember that all songs in 2010 went into our test set), using a threshold of 0.45?
+```{r}
+19
+```
+How many non-hit songs does Model 3 predict will be Top 10 hits (again, looking at the test set), using a threshold of 0.45?
+```{r}
+5
+```
+What is the sensitivity of Model 3 on the test set, using a threshold of 0.45?
+```{r}
+19/(19+40)
+```
+What is the specificity of Model 3 on the test set, using a threshold of 0.45?
+```{r}
+309/(309+19)
+```
+
+How many parolees are contained in the dataset?
+```{r}
+parole <- read.csv("parole.csv")
+nrow(parole)
+```
+How many of the parolees in the dataset violated the terms of their parole?
+```{r}
+table(parole$violator)
+```
+```{r}
+str(parole)
+```
+
+Roughly what proportion of parolees have been allocated to the training and testing sets?
+```{r}
+set.seed(144)
+library(caTools)
+split = sample.split(parole$violator, SplitRatio = 0.7)
+train = subset(parole, split == TRUE)
+test = subset(parole, split == FALSE)
+```
+
+What variables are significant in this model? 
+```{r}
+model1 <- glm(violator ~., family= "binomial", data = train)
+```
+```{r}
+summary(model1)
+```
+What is the maximum predicted probability of a violation?
+```{r}
+vio <- predict(model1, newdata = test, type = "response")
+
+```
+
+```{r}
+summary(vio)
+```
+Using the ROCR package, what is the AUC value for the model?
+```{r}
+library(ROCR)
+ROCRpredtest <- prediction(vio, test$violator)
+auc <- as.numeric(performance(ROCRpredtest, "auc")@y.values)
+```
+
+What proportion of the loans in the dataset were not paid in full?
+```{r}
+loans <- read.csv("loans.csv")
+```
+
+```{r}
+table(loans$not.fully.paid)
+1533/(1533+8045)
+```
+Which of the following variables has at least one missing observation?
+```{r}
+summary(loans)
+```
+
+```{r}
+library(mice)
+set.seed(144)
+
+vars.for.imputation = setdiff(names(loans), "not.fully.paid")
+
+imputed = complete(mice(loans[vars.for.imputation]))
+
+loans[vars.for.imputation] = imputed
+```
+```{r}
+loans <- read.csv("loans_imputed.csv")
+```
+
+Which independent variables are significant in our model?
+```{r}
+library(caTools)
+set.seed(144)
+split = sample.split(loans$not.fully.paid, SplitRatio = 0.70)
+train_split = subset(loans, split == TRUE)
+test_split = subset(loans, split == FALSE)
+model <- glm(not.fully.paid ~., family = "binomial", data = train_split)
+summary(model)
+```
+Let Logit(A) be the log odds of loan A not being paid back in full, according to our logistic regression model, and define Logit(B) similarly for loan B. What is the value of Logit(A) - Logit(B)?
+```{r}
+ -0.009317 * -10 
+```
+
+Now, let O(A) be the odds of loan A not being paid back in full, according to our logistic regression model, and define O(B) similarly for loan B. What is the value of O(A)/O(B)? (HINT: Use the mathematical rule that exp(A + B + C) = exp(A)*exp(B)*exp(C).
+```{r}
+exp(0.09317) 
+```
+
+What is the accuracy of the logistic regression model?
+```{r}
+predict <- predict(model, test_split, type = "response" )
+```
+
+```{r}
+table(test_split$not.fully.paid, predict >= .45)
+(2392+16)/(2873)
+```
+
+```{r}
+table(test_split$not.fully.paid)
+(2413)/(2413+460)
+```
+
+Use the ROCR package to compute the test set AUC.
+```{r}
+library(ROCR)
+ROCRpredtest <- prediction(predict, test_split$not.fully.paid)
+auc <- as.numeric(performance(ROCRpredtest, "auc")@y.values)
+auc
+```
+```{r}
+model2 <- glm(not.fully.paid~int.rate, family = "binomial", data = train_split)
+```
+
+Make test set predictions for the bivariate model. What is the highest predicted probability of a loan not being paid in full on the testing set?
+```{r}
+predict2 <- predict(model2, test_split, type = "response")
+max(predict2)
+```
+```{r}
+table(test_split$not.fully.paid, predict2 >= .5)
+0/2873
+```
+What is the test set AUC of the bivariate model?
+```{r}
+ROCRpredtest <- prediction(predict2, test_split$not.fully.paid)
+auc <- as.numeric(performance(ROCRpredtest, "auc")@y.values)
+auc
+```
+
