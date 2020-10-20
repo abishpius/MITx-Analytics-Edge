@@ -1,0 +1,191 @@
+
+#Unit6: Hierarchical Clustering 
+
+```{r}
+movies = read.table("uitem.txt", header=FALSE, sep="|",quote="\"")
+
+
+```
+```{r}
+colnames(movies) = c("ID", "Title", "ReleaseDate", "VideoReleaseDate", "IMDB", "Unknown", "Action", "Adventure", "Animation", "Childrens", "Comedy", "Crime", "Documentary", "Drama", "Fantasy", "FilmNoir", "Horror", "Musical", "Mystery", "Romance", "SciFi", "Thriller", "War", "Western")
+```
+
+```{r}
+table(movies$Romance, movies$Drama)
+```
+```{r}
+movies$ID = NULL
+movies$ReleaseDate = NULL
+movies$VideoReleaseDate = NULL
+movies$IMDB = NULL
+
+# Remove duplicates
+movies = unique(movies)
+```
+
+```{r}
+distances = dist(movies[2:20], method = "euclidean")
+```
+```{r}
+clusterMovies = hclust(distances, method = "ward") 
+```
+
+```{r}
+clusterGroups = cutree(clusterMovies, k = 2)
+```
+```{r}
+colMeans(table(clusterGroups))
+
+```
+
+```{r}
+flower = read.csv("flower.csv", header=FALSE)
+```
+
+```{r}
+flowerMatrix = as.matrix(flower)
+```
+
+```{r}
+flowerVector = as.vector(flowerMatrix)
+```
+
+```{r}
+flowerVector2 = as.vector(flower)
+```
+
+```{r}
+distance = dist(flowerVector, method = "euclidean")
+```
+
+```{r}
+clusterIntensity = hclust(distance, method="ward")
+```
+```{r}
+plot(clusterIntensity)
+```
+
+```{r}
+rect.hclust(clusterIntensity, k = 3, border = "red")
+flowerClusters = cutree(clusterIntensity, k = 3)
+```
+
+```{r}
+tapply(flowerVector, flowerClusters, mean)
+```
+
+```{r}
+dim(flowerClusters) = c(50,50)
+image(flowerClusters, axes = FALSE)
+```
+
+Let's start by building a hierarchical clustering model. First, read the data set into R. Then, compute the distances (using method="euclidean"), and use hclust to build the model (using method="ward.D"). You should cluster on all of the variables.
+```{r}
+dailykos <- read.csv("dailykos.csv")
+
+```
+
+```{r}
+distances = dist(docs, method = "euclidean")
+```
+
+```{r}
+clusterdocs = hclust(distances, method = "ward.D") 
+```
+
+Plot the dendrogram of your hierarchical clustering model. Just looking at the dendrogram, which of the following seem like good choices for the number of clusters? 
+```{r}
+plot(clusterdocs)
+```
+
+Let's pick 7 clusters. This number is reasonable according to the dendrogram, and also seems reasonable for the application. Use the cutree function to split your data into 7 clusters.
+
+Now, we don't really want to run tapply on every single variable when we have over 1,000 different variables. Let's instead use the subset function to subset our data by cluster. Create 7 new datasets, each containing the observations from one of the clusters.
+
+How many observations are in cluster 3?
+```{r}
+hierGroups = cutree(clusterdocs, k = 7)
+```
+
+```{r}
+HierCluster1 = subset(dailykos, hierGroups == 1)
+
+HierCluster2 = subset(dailykos, hierGroups == 2)
+
+HierCluster3 = subset(dailykos, hierGroups == 3)
+
+HierCluster4 = subset(dailykos, hierGroups == 4)
+
+HierCluster5 = subset(dailykos, hierGroups == 5)
+
+HierCluster6 = subset(dailykos, hierGroups == 6)
+
+HierCluster7 = subset(dailykos, hierGroups == 7)
+```
+
+What is the most frequent word in this cluster, in terms of average value? Enter the word exactly how you see it in the output:
+```{r}
+tail(sort(colMeans(HierCluster1)))
+```
+Which words best describe cluster 2?
+```{r}
+tail(sort(colMeans(HierCluster2)))
+print("")
+tail(sort(colMeans(HierCluster3)))
+print("")
+tail(sort(colMeans(HierCluster4)))
+print("")
+tail(sort(colMeans(HierCluster5)))
+print("")
+tail(sort(colMeans(HierCluster6)))
+print("")
+tail(sort(colMeans(HierCluster7)))
+```
+
+Now, run k-means clustering, setting the seed to 1000 right before you run the kmeans function. Again, pick the number of clusters equal to 7. You don't need to add the iters.max argument.
+
+Subset your data into the 7 clusters (7 new datasets) by using the "cluster" variable of your kmeans output.
+
+How many observations are in Cluster 3?
+```{r}
+set.seed(1000)
+KmeansCluster = kmeans(dailykos, centers = 7)
+```
+
+```{r}
+KmeansCluster1 = subset(dailykos, KmeansCluster$cluster == 1)
+
+KmeansCluster2 = subset(dailykos, KmeansCluster$cluster == 2)
+
+KmeansCluster3 = subset(dailykos, KmeansCluster$cluster == 3)
+
+KmeansCluster4 = subset(dailykos, KmeansCluster$cluster == 4)
+
+KmeansCluster5 = subset(dailykos, KmeansCluster$cluster == 5)
+
+KmeansCluster6 = subset(dailykos, KmeansCluster$cluster == 6)
+
+KmeansCluster7 = subset(dailykos, KmeansCluster$cluster == 7)
+```
+
+```{r}
+tail(sort(colMeans(KmeansCluster1)))
+print("")
+tail(sort(colMeans(KmeansCluster2)))
+print("")
+tail(sort(colMeans(KmeansCluster3)))
+print("")
+tail(sort(colMeans(KmeansCluster4)))
+print("")
+tail(sort(colMeans(KmeansCluster5)))
+print("")
+tail(sort(colMeans(KmeansCluster6)))
+print("")
+tail(sort(colMeans(KmeansCluster7)))
+
+```
+Which Hierarchical Cluster best corresponds to K-Means Cluster 2?
+```{r}
+table(hierGroups, KmeansCluster$cluster)
+```
+
